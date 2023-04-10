@@ -1,0 +1,18 @@
+# VS Code files
+.vs
+
+# Generated directories
+Library/
+obj/
+Packages/
+Temp/
+metland-transyogi-android_Data/
+Mono/
+
+# Generated Files
+Assembly-CSharp-Editor.csproj
+*.csproj
+*.sln
+*.exe
+*.dll
+*.apk
