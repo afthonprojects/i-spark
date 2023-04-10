@@ -16,6 +16,11 @@ public class StartPoint : MonoBehaviour {
     [SerializeField]
     private GameObject box;
 
+    private void Start() {
+        buttonSpawnBox.onClick.RemoveAllListeners();
+        buttonSpawnBox.onClick.AddListener(delegate { OnSpawn(); });
+    }
+
     public void OnIdle() {
         animator.SetTrigger("idle");
         buttonSpawnBox.interactable = true;

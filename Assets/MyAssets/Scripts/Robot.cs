@@ -20,8 +20,10 @@ public class Robot : MonoBehaviour {
     private Vector3 startPos;
     private Quaternion startRot;
     private GameObject currentBox;
+    private APIManager apiManager;
 
     private void Start() {
+        apiManager = FindObjectOfType<APIManager>();
         startPos = this.transform.position;
         startRot = this.transform.rotation;
     }
@@ -80,6 +82,7 @@ public class Robot : MonoBehaviour {
                     case TrackPoint.Type.end:
                     yield return StartCoroutine(OnEndPointCoroutine());
                     isReachEnd = true;
+                    apiManager.FinishTask(currentDestination.id);
                     break;
                     case TrackPoint.Type.intersection:
                     break;

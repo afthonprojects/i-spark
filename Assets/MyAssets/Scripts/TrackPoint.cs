@@ -11,7 +11,7 @@ public class TrackPoint : MonoBehaviour
         intersection
     }
 
-    public int id;
+    public string id;
     public Type type;
     public Transform point;
     public TMP_Text textNumber;
