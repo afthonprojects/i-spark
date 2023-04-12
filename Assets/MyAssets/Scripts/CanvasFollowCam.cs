@@ -12,6 +12,6 @@ public class CanvasFollowCam : MonoBehaviour
 
 
     void Update() {
-        this.transform.rotation = Quaternion.Slerp(Quaternion.Euler(0, this.transform.eulerAngles.y, 0), Quaternion.Euler(0, camTransform.eulerAngles.y, 0), Time.deltaTime * 2);
+        this.transform.rotation = Quaternion.Slerp(Quaternion.Euler(this.transform.eulerAngles.x, this.transform.eulerAngles.y, 0), Quaternion.Euler(camTransform.eulerAngles.x, camTransform.eulerAngles.y, 0), Time.deltaTime * 2);
     }
 }

@@ -23,8 +23,20 @@ public class TrackManager : MonoBehaviour {
     private List<Start> startPoints;
     [SerializeField]
     private List<End> endPoints;
+    [SerializeField]
+    private string idMcDummy;
+    [SerializeField]
+    private string idMaDummy;
     public static event Action<Start, End> OnPlay;
     public static event Action OnRestart;
+
+    private void Update() {
+        if (Application.isEditor) {
+            if (Input.GetKeyDown(KeyCode.Space)) {
+                OnTrackPlay(idMcDummy, idMaDummy);
+            }
+        }
+    }
 
     public void OnTrackPlay(string id_mc, string id_ma) {
         if (!startPoints.Exists(result => result.startPoint.id == id_mc)) {

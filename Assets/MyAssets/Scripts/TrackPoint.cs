@@ -8,7 +8,8 @@ public class TrackPoint : MonoBehaviour
     public enum Type {
         start,
         end,
-        intersection
+        intersection,
+        startIntersection
     }
 
     public string id;

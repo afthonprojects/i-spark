@@ -29,7 +29,7 @@ public class Robot : MonoBehaviour {
     }
 
     private void OnEnable() {
-        
+
         TrackManager.OnPlay += OnMove;
         TrackManager.OnRestart += OnRestart;
     }
@@ -53,7 +53,7 @@ public class Robot : MonoBehaviour {
 
     public void OnRestart() {
         StopAllCoroutines();
-        if(currentBox != null) {
+        if (currentBox != null) {
             boxManager.HideBox(currentBox);
             currentBox = null;
         }
@@ -69,27 +69,76 @@ public class Robot : MonoBehaviour {
             yield break;
         while (!isReachEnd && tracks.Count > 0) {
             currentDestination = tracks[trackIndex];
+            if (currentDestination.type == TrackPoint.Type.startIntersection) {
+                trackIndex += 1;
+            } else {
+                transform.position += transform.forward * moveSpeed * Time.deltaTime;
+                Vector3 lookPos = currentDestination.point.position - transform.position;
+                lookPos.y = 0;
+                Quaternion rotation = Quaternion.LookRotation(lookPos);
+                transform.rotation = Quaternion.Slerp(transform.rotation, rotation, Time.deltaTime * rotationSpeed);
+                if (IsDestinationReached(this.transform.position, currentDestination.point.position)) {
+                    switch (currentDestination.type) {
+                        case TrackPoint.Type.start:
+                        yield return StartCoroutine(OnStartPointCoroutine());
+                        trackIndex += 1;
+                        break;
+                        case TrackPoint.Type.end:
+                        yield return StartCoroutine(OnEndPointCoroutine());
+                        trackIndex += 1;
+                        isReachEnd = true;
+                        apiManager.FinishTask(currentDestination.id);
+                        break;
+                        case TrackPoint.Type.intersection:
+                        trackIndex += 1;
+                        break;
+                        default:
+                        break;
+                    }
+                }
+            }
+            yield return null;
+        }
+        trackIndex = tracks.Count - 2;
+        while (trackIndex >= 0 && tracks.Count > 0) {
+            currentDestination = tracks[trackIndex];
+            if (currentDestination.type == TrackPoint.Type.start) {
+                trackIndex -= 1;
+            } else {
+                transform.position += transform.forward * moveSpeed * Time.deltaTime;
+                Vector3 lookPos = currentDestination.point.position - transform.position;
+                lookPos.y = 0;
+                Quaternion rotation = Quaternion.LookRotation(lookPos);
+                transform.rotation = Quaternion.Slerp(transform.rotation, rotation, Time.deltaTime * rotationSpeed);
+                if (IsDestinationReached(this.transform.position, currentDestination.point.position)) {
+                    switch (currentDestination.type) {
+                        case TrackPoint.Type.startIntersection:
+                        trackIndex -= 1;
+                        break;
+                        case TrackPoint.Type.end:
+                        trackIndex -= 1;
+                        break;
+                        case TrackPoint.Type.intersection:
+                        trackIndex -= 1;
+                        break;
+                        default:
+                        break;
+                    }
+                }
+            }
+            yield return null;
+        }
+        Debug.Log(IsDestinationReached(this.transform.position, startPos));
+        while (!IsDestinationReached(this.transform.position, startPos) && tracks.Count > 0) {
             transform.position += transform.forward * moveSpeed * Time.deltaTime;
-            Vector3 lookPos = currentDestination.point.position - transform.position;
+            Vector3 lookPos = startPos - transform.position;
             lookPos.y = 0;
             Quaternion rotation = Quaternion.LookRotation(lookPos);
             transform.rotation = Quaternion.Slerp(transform.rotation, rotation, Time.deltaTime * rotationSpeed);
-            if (IsDestinationReached(this.transform, currentDestination.point)) {
-                switch (currentDestination.type) {
-                    case TrackPoint.Type.start:
-                    yield return StartCoroutine(OnStartPointCoroutine());
-                    break;
-                    case TrackPoint.Type.end:
-                    yield return StartCoroutine(OnEndPointCoroutine());
-                    isReachEnd = true;
-                    apiManager.FinishTask(currentDestination.id);
-                    break;
-                    case TrackPoint.Type.intersection:
-                    break;
-                    default:
-                    break;
-                }
-            }
+            yield return null;
+        }
+        while (Mathf.Abs(transform.eulerAngles.y - startRot.eulerAngles.y) > 1f && tracks.Count > 0) {
+            transform.rotation = Quaternion.Slerp(transform.rotation, startRot, Time.deltaTime * rotationSpeed);
             yield return null;
         }
     }
@@ -110,7 +159,7 @@ public class Robot : MonoBehaviour {
             box = startPoint.OnTakingBox();
             yield return null;
         }
-        while (!IsDestinationReached(box.transform, carryPoint)) {
+        while (!IsDestinationReached(box.transform.position, carryPoint.position)) {
             Vector3 targetPos = new Vector3(carryPoint.position.x, box.transform.position.y, carryPoint.position.z);
             box.transform.position = Vector3.MoveTowards(box.transform.position, targetPos, moveSpeed / 2 * Time.deltaTime);
             yield return null;
@@ -132,11 +181,11 @@ public class Robot : MonoBehaviour {
             yield return null;
         }
         yield return new WaitForSeconds(0.1f);
-        if(currentBox == null) {
+        if (currentBox == null) {
             yield break;
         }
         Transform boxController = endPoint.GetBoxController();
-        while (!IsDestinationReached(currentBox.transform, boxController)) {
+        while (!IsDestinationReached(currentBox.transform.position, boxController.position)) {
             Vector3 targetPos = new Vector3(boxController.position.x, currentBox.transform.position.y, boxController.position.z);
             currentBox.transform.position = Vector3.MoveTowards(currentBox.transform.position, targetPos, moveSpeed / 2 * Time.deltaTime);
             yield return null;
@@ -145,11 +194,10 @@ public class Robot : MonoBehaviour {
         currentBox = null;
     }
 
-    private bool IsDestinationReached(Transform currentTransform, Transform targetTransform) {
-        Vector2 now = new Vector2(currentTransform.position.x, currentTransform.position.z);
-        Vector2 dest = new Vector2(targetTransform.position.x, targetTransform.position.z);
+    private bool IsDestinationReached(Vector3 currentPos, Vector3 targetPos) {
+        Vector2 now = new Vector2(currentPos.x, currentPos.z);
+        Vector2 dest = new Vector2(targetPos.x, targetPos.z);
         if (Vector2.Distance(dest, now) < 0.1f) {
-            trackIndex += 1;
             return true;
         }
         return false;

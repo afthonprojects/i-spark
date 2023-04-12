@@ -12,23 +12,18 @@ public class StartPoint : MonoBehaviour {
     [SerializeField]
     private BoxManager boxManager;
     [SerializeField]
-    private Button buttonSpawnBox;
-    [SerializeField]
     private GameObject box;
 
     private void Start() {
-        buttonSpawnBox.onClick.RemoveAllListeners();
-        buttonSpawnBox.onClick.AddListener(delegate { OnSpawn(); });
+        OnSpawn();
     }
 
     public void OnIdle() {
         animator.SetTrigger("idle");
-        buttonSpawnBox.interactable = true;
     }
 
     public void OnSpawn() {
         animator.SetTrigger("spawn");
-        buttonSpawnBox.interactable = false;
     }
 
     public void SpawnBox() {
@@ -39,6 +34,7 @@ public class StartPoint : MonoBehaviour {
         if(box != null) {
             GameObject g = box;
             box = null;
+            OnSpawn();
             return g;
         } else {
             return null;

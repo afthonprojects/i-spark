@@ -160,10 +160,7 @@ public class FreeFlyCamera : MonoBehaviour
 
         SetCursorState();
 
-        if (Cursor.visible)
-            return;
-
-        // Translation
+                // Translation
         if (_enableTranslation)
         {
             transform.Translate(Vector3.forward * Input.mouseScrollDelta.y * Time.deltaTime * _translationSpeed);
@@ -201,6 +198,9 @@ public class FreeFlyCamera : MonoBehaviour
 
             transform.position += deltaPosition * currentSpeed * _currentIncrease;
         }
+
+        if (Cursor.visible)
+            return;
 
         // Rotation
         if (_enableRotation)
